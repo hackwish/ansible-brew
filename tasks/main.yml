@@ -1,0 +1,39 @@
+---
+# tasks file for ansible-brew
+
+- name: brew
+  git:
+    repo: 'https://github.com/Homebrew/brew.git'
+    dest: /opt/brew
+    # mode: 0755
+
+- name: Verify brew exists
+  stat: path=/opt/brew/bin/brew
+  register: brew_stat
+
+- name: Configure brew on system bin.
+  file:
+    src: "/opt/brew/bin/brew"
+    dest: "/usr/bin/brew"
+    state: link
+  when: brew_stat.stat.exists
+
+- name: Configure brew on system sbin.
+  file:
+    src: "/opt/brew/bin/brew"
+    dest: "/usr/sbin/brew"
+    state: link
+  when: brew_stat.stat.exists
+
+- name: Echo brew_bin_var
+  shell: "echo $BREW_BIN"
+  environment:
+    BREW_BIN: eval $(/usr/bin/brew shellenv)
+    
+- name: Echo brew_bin_var again
+  shell: "echo $BREW_BIN"
+
+- command: brew -v
+  register: result
+  failed_when: false
+  changed_when: false
